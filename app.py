@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, flash
+from flask import Flask, request, render_template, redirect, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 from surveys import satisfaction_survey
 
@@ -8,13 +8,19 @@ app.config['SECRET_KEY'] = "jinja"
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 debug = DebugToolbarExtension(app)
 
-responses = []
+
 question_id = 0
 
 
 @app.route('/')
 def landing_page():
     return render_template("home.html", title=satisfaction_survey.title, instructions=satisfaction_survey.instructions)
+
+
+@app.route('/start_survey', methods=["POST"])
+def start_survey():
+    session['responses'] = []
+    return redirect('/questions/0')
 
 
 @app.route("/questions/<int:id>")
@@ -35,7 +41,7 @@ def questions(id):
 def answer():
     answer = request.form.get('answer', False)
     if answer:
-        responses.append(answer)
+        session['responses'].append(answer)
         global question_id
         question_id += 1
     else:
