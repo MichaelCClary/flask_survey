@@ -4,12 +4,11 @@ from surveys import satisfaction_survey
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = "jinja"
+responses = 'responses'
+
+app.config['SECRET_KEY'] = "bacon123"
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 debug = DebugToolbarExtension(app)
-
-
-question_id = 0
 
 
 @app.route('/')
@@ -25,10 +24,10 @@ def start_survey():
 
 @app.route("/questions/<int:id>")
 def questions(id):
-    if id != question_id:
+    if id != len(session['responses']):
         flash("Sorry that question wasn't valid, let me fix that for you", 'error')
-        return redirect(f"/questions/{question_id}")
-    elif id >= len(satisfaction_survey.questions):
+        return redirect(f"/questions/{len(session['responses'])}")
+    if id >= len(satisfaction_survey.questions):
         question = "Thank you for your time"
         return render_template("questions.html", question=question)
     else:
@@ -41,9 +40,9 @@ def questions(id):
 def answer():
     answer = request.form.get('answer', False)
     if answer:
-        session['responses'].append(answer)
-        global question_id
-        question_id += 1
+        responses = session['responses']
+        responses.append(answer)
+        session['responses'] = responses
     else:
         flash("Please answer the question", 'error')
-    return redirect(f"/questions/{question_id}")
+    return redirect(f"/questions/{len(session['responses'])}")
